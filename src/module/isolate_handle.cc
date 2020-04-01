@@ -494,9 +494,12 @@ Local<Value> IsolateHandle::CreateSnapshot(ArrayRange script_handles, MaybeLocal
 					{
 						Context::Scope context_scope{context};
 						Local<Script> compiled_script = RunWithAnnotatedErrors(
-							[&context, &source]() { return Unmaybe(ScriptCompiler::Compile(context, &source, ScriptCompiler::kNoCompileOptions)); }
-						);
-						Unmaybe(compiled_script->Run(context));
+							[&context, &source]() {
+								const auto compiled_script = Unmaybe(ScriptCompiler::Compile(context, &source, ScriptCompiler::kNoCompileOptions));
+								Unmaybe(compiled_script->Run(context));
+								return compiled_script;
+							}
+						);			
 						unbound_script = compiled_script->GetUnboundScript();
 					}
 					if (warmup_script) {
